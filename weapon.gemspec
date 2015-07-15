@@ -9,4 +9,11 @@ Gem::Specification.new do |s|
   s.files       = ["lib/weapon.rb"]
   s.homepage    = 'http://rubygems.org/gems/weapon'
   s.license     = 'MIT'
+
+  s.executables << 'weapon'
+
+  s.add_development_dependency 'rspec', '~> 3.3'
+  s.add_dependency 'thor', '~> 0.14'
+  s.add_dependency 'choice'
+  s.add_dependency 'awesome_print'
 end

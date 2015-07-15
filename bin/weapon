@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'choice'
+require 'weapon'
+require 'awesome_print'
+
+Choice.options do
+  header ''
+  header 'Specific options:'
+
+  option :exception_slack_notify do
+    long '--slack=[BOOL]'
+    desc 'when exception happen, enable notify through slack channel'
+  end
+
+  option :github_setup do
+    long '--github=[BOOL]'
+    desc 'deploy to github'
+  end
+
+
+
+end
+
+
+ap Choice.class
+ap Choice.choices
+ap Choice.choices.inspect
+ap Choice[:github_setup]
+ap Choice[:exception_slack_notify]
+puts Weapon.hi(ARGV[0])
