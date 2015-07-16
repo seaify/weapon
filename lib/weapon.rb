@@ -1,10 +1,22 @@
 require 'thor'
 
 class Weapon < Thor
+  include Thor::Actions
 
   desc "setup_mina_deploy", "setup mina deploy"
   def setup_mina_deploy
     puts "setup mina deploy"
+    run "mina init"
+    username = ask("input your user name on deploy host:")
+    File.open('config/deploy.rb', 'a') { |f| f.write("\nset :user, '#{username}' ")}
+    domain = ask("input your deploy host, like example.com or 123.100.100.100:")
+    gsub_file "config/deploy.rb", "'foobar.com'", "'" + domain + "'"
+    directory = ask("input your deploy directory:")
+    directory = directory.gsub(/\/$/, "")
+    gsub_file "config/deploy.rb", "/var/www/foobar.com", directory
+    setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
+    run setup_dir_command
+    run 'mina setup'
   end
 
   desc "setup_settings_ui", "setup settings ui"
@@ -33,6 +45,15 @@ class Weapon < Thor
     puts "pull to github"
   end
 
+  desc "all", "exec all other command"
+  def all
+    setup_mina_deploy
+    setup_settings_ui
+    setup_exception_slack_notify
+    custom_i18n
+    install_recommend_gems
+    pull_to_github
+  end
 end
 
 Weapon.start ARGV
