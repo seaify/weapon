@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = "provide mina deploy, github setup, slack exception notify, i18n scaffold, rails-settings-ui, guard custom"
   s.authors     = ["Chuck.lei"]
   s.email       = 'dilin.life@gmail.com'
-  s.files       = ["lib/weapon.rb"]
+  s.files       = Dir["lib/weapon.rb", "lib/support/**/*"]
   s.homepage    = 'http://rubygems.org/gems/weapon'
   s.license     = 'MIT'
 
