@@ -1,10 +1,18 @@
 require 'thor'
+require 'awesome_print'
 
 class Weapon < Thor
   include Thor::Actions
 
   desc "setup_mina_deploy", "setup mina deploy"
   def setup_mina_deploy
+    ok = run "git remote -v"
+    if ok == false
+      puts "this project should in version controll use git"
+      run "git init"
+      run "git add *"
+      run "git commit -a -m 'first commit'"
+    end
     puts "setup mina deploy"
     run "mina init"
     username = ask("input your user name on deploy host:")
@@ -14,6 +22,10 @@ class Weapon < Thor
     directory = ask("input your deploy directory:")
     directory = directory.gsub(/\/$/, "")
     gsub_file "config/deploy.rb", "/var/www/foobar.com", directory
+
+    repository = ask("input your git remote url, like git@github.com:seaify/weapon.git ")
+    gsub_file "config/deploy.rb", "git://...", repository
+
     setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
     run setup_dir_command
     run 'mina setup'
@@ -43,6 +55,13 @@ class Weapon < Thor
   desc "pull_to_github", "pull to github"
   def pull_to_github
     puts "pull to github"
+    run 'gem install hub'
+    run "hub create #{app_name}"
+    run "hub push -u origin dev"
+    #update deploy.rb repo
+    result = `hub remote -v | awk '{ print $2}' | head -n1`
+    repository = result.strip
+    gsub_file "config/deploy.rb", "git://...", repository
   end
 
   desc "all", "exec all other command"
