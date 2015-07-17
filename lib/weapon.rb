@@ -56,21 +56,6 @@ class Weapon < Thor
     copy_file 'support/rails_settings_ui/setting.rb', 'app/models/setting.rb'
   end
 
-  desc "setup_exception_slack_notify", "setup exception slack notify"
-  def setup_exception_slack_notify
-    invoke :makesure_in_git
-    slack_channel = ask("input your slack channel name like exceptions, pay attention, without '#'")
-    slack_webhook_url = ask("input your slack webhook_url, refer to https://my.slack.com/services/new/incoming-webhook:\n")
-
-    File.open("Gemfile", "a").write("\ngem 'exception_notification'\ngem 'slack-notifier'\ngem 'sidekiq', '~> 3.3.4'")
-    run 'bundle'
-    run 'rails g exception_notification:install'
-    copy_file 'support/exception_slack_notify/exception_notification.rb', 'config/initializers/exception_notification.rb'
-    gsub_file "config/initializers/exception_notification.rb", "slack_webhook_url", slack_webhook_url
-    gsub_file "config/initializers/exception_notification.rb", "slack_channel", slack_channel
-  end
-
-
   desc "custom_i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml", "custom i18n"
   def custom_i18n
     invoke :makesure_in_git
@@ -112,13 +97,6 @@ class Weapon < Thor
     run "rm app/assets/stylesheets/application.css"
   end
 
-  desc "install_recomend_gems, this feature comming soon", "install_recommend_gems"
-  def install_recommend_gems
-    invoke :makesure_in_git
-    puts "install recommend gems"
-    puts "this feature coming soon"
-  end
-
   desc "push_to_github", "push to github"
   def push_to_github
     invoke :makesure_in_git
@@ -128,13 +106,4 @@ class Weapon < Thor
     run "hub push -u origin master"
   end
 
-  desc "all", "exec all other command"
-  def all
-    setup_mina_deploy
-    setup_settings_ui
-    setup_exception_slack_notify
-    custom_i18n
-    install_recommend_gems
-    push_to_github
-  end
 end
