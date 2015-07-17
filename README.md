@@ -23,6 +23,20 @@ gem 'weapon'
 ```
 and run `bundle install` from your shell.
 
+Usage
+--------
+```ruby
+chuck@chuck-MacBook-Pro:~/seaify/weapon(master|✔) % weapon  
+Commands:
+  weapon config_bootstrap   # config bootstrap, example, used for simmple_form
+  weapon custom_i18n        # custom i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml
+  weapon help [COMMAND]     # Describe available commands or one specific command
+  weapon makesure_in_git    # makesure all the files is in git version control
+  weapon push_to_github     # push to github
+  weapon setup_mina_deploy  # setup mina deploy
+  weapon setup_settings_ui  # setup settings ui
+```
+
 Environment version
 -----------------------
 
