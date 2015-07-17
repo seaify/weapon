@@ -23,6 +23,14 @@ module Rails
         if not data['zh-CN'].has_key?("activerecord")
           data["zh-CN"]["activerecord"] = {"models" => {}, "attributes" => {file_name => {}}}
         end
+        if not data["zh-CN"].has_key?("helpers")
+          data["zh-CN"]["helpers"] = {}
+        end
+
+        if not data["zh-CN"]["helpers"].has_key?("submit")
+          data["zh-CN"]["helpers"]["submit"] = {}
+        end
+        data["zh-CN"]["helpers"]["submit"][file_name] = {"create" => "创建", "update" => "更新"}
 
         data["zh-CN"]["activerecord"]["models"][file_name] = file_name
         data["zh-CN"]["activerecord"]["attributes"][file_name] = {}

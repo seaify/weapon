@@ -41,7 +41,9 @@ class Weapon < Thor
 
   desc "setup_settings_ui", "setup settings ui"
   def setup_settings_ui
-    inject_into_file "Gemfile", "gem 'rails-settings-ui', '~> 0.3.0'\n gem 'rails-settings-cached', '0.4.1'\n", :before => /^end/
+    invoke :makesure_in_git
+    #inject_into_file "Gemfile", "gem 'rails-settings-ui', '~> 0.3.0'\n gem 'rails-settings-cached', '0.4.1'\n", :before => /^end/
+    File.open("Gemfile", "a").write("\ngem 'rails-settings-ui', '~> 0.3.0'\n gem 'rails-settings-cached', '0.4.1'\n")
     run "bundle"
     run "rails g settings setting"
     run "rails g rails_settings_ui:install"
@@ -52,20 +54,23 @@ class Weapon < Thor
 
   desc "setup_exception_slack_notify", "setup exception slack notify"
   def setup_exception_slack_notify
+    invoke :makesure_in_git
     puts "setup exception slack notify"
   end
 
 
-  desc "custom_i18n and use slim as template engine", "custom i18n"
+  desc "custom_i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml", "custom i18n"
   def custom_i18n
+    invoke :makesure_in_git
     puts "custom i18n"
     File.open("Gemfile", "a").write("\ngem 'slim-rails'\ngem 'simple_form', '~> 3.1.0'")
     run "bundle"
-    run "rails g simple_form:install --bootstrap"
+
     unless File.exist?('config/locales/zh-CN.yml')
       copy_file 'support/custom_i18n/zh-CN.yml', 'config/locales/zh-CN.yml'
     end
 
+    run "rails g simple_form:install --bootstrap"
     copy_file 'support/custom_i18n/_form.html.slim', 'lib/templates/slim/scaffold/_form.html.slim'
     copy_file 'support/custom_i18n/index.html.slim', 'lib/templates/slim/scaffold/index.html.slim'
     copy_file 'support/custom_i18n/new.html.slim', 'lib/templates/slim/scaffold/new.html.slim'
@@ -85,6 +90,7 @@ class Weapon < Thor
 
   desc "install_recomend_gems", "install_recommend_gems"
   def install_recommend_gems
+    invoke :makesure_in_git
     puts "install recommend gems"
   end
 
