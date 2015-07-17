@@ -1,0 +1,11 @@
+p#notice = notice
+
+<% attributes.each do |attribute| -%>
+p
+  strong = <%= class_name %>.human_attribute_name("<%= attribute.name %>") + ':'
+  = @<%= singular_table_name %>.<%= attribute.name %>
+<% end -%>
+
+= link_to t('action.edit'), edit_<%= singular_table_name %>_path(@<%= singular_table_name %>)
+'|
+= link_to t('action.back'), <%= index_helper %>_path

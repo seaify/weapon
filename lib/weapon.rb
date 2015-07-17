@@ -56,9 +56,31 @@ class Weapon < Thor
   end
 
 
-  desc "custom_i18n", "custom i18n"
+  desc "custom_i18n and use slim as template engine", "custom i18n"
   def custom_i18n
     puts "custom i18n"
+    File.open("Gemfile", "a").write("\ngem 'slim-rails'\ngem 'simple_form', '~> 3.1.0'")
+    run "bundle"
+    run "rails g simple_form:install --bootstrap"
+    unless File.exist?('config/locales/zh-CN.yml')
+      copy_file 'support/custom_i18n/zh-CN.yml', 'config/locales/zh-CN.yml'
+    end
+
+    copy_file 'support/custom_i18n/_form.html.slim', 'lib/templates/slim/scaffold/_form.html.slim'
+    copy_file 'support/custom_i18n/index.html.slim', 'lib/templates/slim/scaffold/index.html.slim'
+    copy_file 'support/custom_i18n/new.html.slim', 'lib/templates/slim/scaffold/new.html.slim'
+    copy_file 'support/custom_i18n/edit.html.slim', 'lib/templates/slim/scaffold/edit.html.slim'
+    copy_file 'support/custom_i18n/show.html.slim', 'lib/templates/slim/scaffold/show.html.slim'
+
+    copy_file 'support/custom_i18n/controller.rb', 'lib/templates/rails/i18n_scaffold_controller/controller.rb'
+    copy_file 'support/custom_i18n/i18n_scaffold_controller_generator.rb', 'lib/generators/rails/i18n_scaffold_controller/i18n_scaffold_controller_generator.rb'
+
+    inject_into_file 'config/application.rb', after: "# -- all .rb files in that directory are automatically loaded.\n" do <<-'RUBY'
+    config.generators.template_engine = :slim
+    config.generators.scaffold_controller = "i18n_scaffold_controller"
+    config.i18n.default_locale = "zh-CN"
+    RUBY
+    end
   end
 
   desc "install_recomend_gems", "install_recommend_gems"

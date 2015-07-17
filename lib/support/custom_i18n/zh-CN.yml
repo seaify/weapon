@@ -1,0 +1,8 @@
+zh-CN:
+  action:
+    new: 新建
+    edit: 编辑
+    show: 查看
+    delete: 删除
+    back: 返回
+    confirm_delete: 确认删除

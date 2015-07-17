@@ -1,0 +1,23 @@
+h1 = <%= class_name %>.model_name.human
+
+table.table.table-striped
+  tr
+<% attributes.each do |attribute| -%>
+    th = <%= class_name %>.human_attribute_name("<%= attribute.name %>")
+<% end -%>
+    th
+    th
+    th
+
+  - @<%= plural_table_name %>.each do |<%= singular_table_name %>|
+    tr
+<% attributes.each do |attribute| -%>
+      td = <%= singular_table_name %>.<%= attribute.name %>
+<% end -%>
+      td = link_to t('action.show'), <%= singular_table_name %>
+      td = link_to t('action.edit'), edit_<%= singular_table_name %>_path(<%= singular_table_name %>)
+      td = link_to t('action.delete'), <%= singular_table_name %>, :confirm => t('action.confirm_delete'), :method => :delete
+
+br
+
+= link_to (t('action.new') + <%= class_name %>.model_name.human), new_<%= singular_table_name %>_path
