@@ -14,6 +14,5 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec', '~> 3.3'
   s.add_dependency 'thor', '~> 0.14'
-  s.add_dependency 'choice'
-  s.add_dependency 'awesome_print'
+  s.add_dependency 'awesome_print', '~> 1.6'
 end

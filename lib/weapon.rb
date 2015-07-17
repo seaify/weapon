@@ -10,6 +10,7 @@ class Weapon < Thor
 
   desc "makesure_in_git", "makesure all the files is in git version control"
   def makesure_in_git
+    run "spring stop"
     unless (run "git remote -v")
       puts "this project should in version controll use git"
       run "git init"
@@ -36,7 +37,10 @@ class Weapon < Thor
 
     setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
     run setup_dir_command
+
     run 'mina setup'
+    run 'scp config/database.yml ' + username + '@' + domain + ':' + directory + '/shared/config/'
+    run 'mina deploy'
   end
 
   desc "setup_settings_ui", "setup settings ui"
@@ -93,9 +97,9 @@ class Weapon < Thor
     config.generators.template_engine = :slim
     config.generators.scaffold_controller = "i18n_scaffold_controller"
     config.i18n.default_locale = "zh-CN"
-    run "rails g simple_form:install --bootstrap"
     RUBY
     end
+    run "rails g simple_form:install --bootstrap"
   end
 
   desc "config_bootstrap", "config bootstrap, example, used for simmple_form"
@@ -131,6 +135,6 @@ class Weapon < Thor
     setup_exception_slack_notify
     custom_i18n
     install_recommend_gems
-    pull_to_github
+    push_to_github
   end
 end
