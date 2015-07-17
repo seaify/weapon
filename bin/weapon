@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'choice'
 require 'weapon'
 require 'awesome_print'
 
