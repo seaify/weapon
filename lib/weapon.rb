@@ -70,6 +70,7 @@ class Weapon < Thor
       copy_file 'support/custom_i18n/zh-CN.yml', 'config/locales/zh-CN.yml'
     end
 
+    invoke :config_bootstrap
     run "rails g simple_form:install --bootstrap"
     copy_file 'support/custom_i18n/_form.html.slim', 'lib/templates/slim/scaffold/_form.html.slim'
     copy_file 'support/custom_i18n/index.html.slim', 'lib/templates/slim/scaffold/index.html.slim'
@@ -84,8 +85,19 @@ class Weapon < Thor
     config.generators.template_engine = :slim
     config.generators.scaffold_controller = "i18n_scaffold_controller"
     config.i18n.default_locale = "zh-CN"
+    run "rails g simple_form:install --bootstrap"
     RUBY
     end
+  end
+
+  desc "config_bootstrap", "config bootstrap, example, used for simmple_form"
+  def config_bootstrap
+    File.open("Gemfile", "a").write("\ngem 'bootstrap-sass'")
+    run "bundle"
+    #config bootstrap stylesheets
+    File.open('app/assets/javascripts/application.js', 'a') { |f| f.write("\n//= require bootstrap-sprockets")}
+    File.open('app/assets/stylesheets/application.scss', 'a') { |f| f.write("\n@import 'bootstrap-sprockets';\n@import 'bootstrap';") }
+    run "rm app/assets/stylesheets/application.css"
   end
 
   desc "install_recomend_gems", "install_recommend_gems"
