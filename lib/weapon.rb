@@ -106,4 +106,10 @@ class Weapon < Thor
     run "hub push -u origin master"
   end
 
+  desc "install_must_gems", "install must need gems like guard, guard-livereload, guard-rspec..."
+  def install_must_gems
+    invoke :makesure_in_git
+    gem 'guard-bundler'
+  end
+
 end
