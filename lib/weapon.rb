@@ -8,20 +8,32 @@ class Weapon < Thor
     File.dirname(__FILE__)
   end
 
-  desc "makesure_in_git", "makesure all the files is in git version control"
-  def makesure_in_git
-    run "spring stop"
-    unless (run "git remote -v")
-      puts "this project should in version controll use git"
-      run "git init"
-      run "git add *"
-      run "git commit -a -m 'first commit'"
+  no_commands do
+    def makesure_in_git
+      #run "spring stop"
+      unless (run "git remote -v")
+        puts "this project should in version controll use git"
+        run "git init"
+        run "git add *"
+        run "git commit -a -m 'first commit'"
+      end
     end
+
+    def config_bootstrap
+      File.open("Gemfile", "a").write("\ngem 'bootstrap-sass'")
+      run "bundle"
+      #config bootstrap stylesheets
+      File.open('app/assets/javascripts/application.js', 'a') { |f| f.write("\n//= require bootstrap-sprockets")}
+      File.open('app/assets/stylesheets/application.scss', 'a') { |f| f.write("\n@import 'bootstrap-sprockets';\n@import 'bootstrap';") }
+      run "rm app/assets/stylesheets/application.css"
+    end
+
   end
+
 
   desc "setup_mina_deploy", "setup mina deploy"
   def setup_mina_deploy
-    invoke :makesure_in_git
+    makesure_in_git
     puts "setup mina deploy"
     run "mina init"
     username = ask("input your user name on deploy host:")
@@ -32,8 +44,9 @@ class Weapon < Thor
     directory = directory.gsub(/\/$/, "")
     gsub_file "config/deploy.rb", "/var/www/foobar.com", directory
 
-    repository = ask("input your git remote url to pull from, like git@github.com:seaify/weapon.git ")
-    gsub_file "config/deploy.rb", "git://...", repository
+    default_repo = `git remote -v`.split(' ')[1]
+    repository = ask("input your git remote url to pull from, default #{default_repo} ")
+    gsub_file "config/deploy.rb", "git://...", (repository != "")?repository: default_repo
 
     setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
     run setup_dir_command
@@ -45,7 +58,7 @@ class Weapon < Thor
 
   desc "setup_settings_ui", "setup settings ui"
   def setup_settings_ui
-    invoke :makesure_in_git
+    makesure_in_git
     #inject_into_file "Gemfile", "gem 'rails-settings-ui', '~> 0.3.0'\n gem 'rails-settings-cached', '0.4.1'\n", :before => /^end/
     File.open("Gemfile", "a").write("\ngem 'rails-settings-ui', '~> 0.3.0'\n gem 'rails-settings-cached', '0.4.1'\n")
     run "bundle"
@@ -58,7 +71,7 @@ class Weapon < Thor
 
   desc "custom_i18n", "custom i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml"
   def custom_i18n
-    invoke :makesure_in_git
+    makesure_in_git
     puts "custom i18n"
     File.open("Gemfile", "a").write("\ngem 'slim-rails'\ngem 'simple_form', '~> 3.1.0'")
     run "bundle"
@@ -67,7 +80,7 @@ class Weapon < Thor
       copy_file 'support/custom_i18n/zh-CN.yml', 'config/locales/zh-CN.yml'
     end
 
-    invoke :config_bootstrap
+    config_bootstrap
     run "rails g simple_form:install --bootstrap"
     copy_file 'support/custom_i18n/_form.html.slim', 'lib/templates/slim/scaffold/_form.html.slim'
     copy_file 'support/custom_i18n/index.html.slim', 'lib/templates/slim/scaffold/index.html.slim'
@@ -87,19 +100,9 @@ class Weapon < Thor
     run "rails g simple_form:install --bootstrap"
   end
 
-  desc "config_bootstrap", "config bootstrap, example, used for simmple_form"
-  def config_bootstrap
-    File.open("Gemfile", "a").write("\ngem 'bootstrap-sass'")
-    run "bundle"
-    #config bootstrap stylesheets
-    File.open('app/assets/javascripts/application.js', 'a') { |f| f.write("\n//= require bootstrap-sprockets")}
-    File.open('app/assets/stylesheets/application.scss', 'a') { |f| f.write("\n@import 'bootstrap-sprockets';\n@import 'bootstrap';") }
-    run "rm app/assets/stylesheets/application.css"
-  end
-
   desc "push_to_github", "push to github"
   def push_to_github
-    invoke :makesure_in_git
+    makesure_in_git
     puts "pull to github"
     run 'gem install hub'
     run "hub create #{File.basename(Dir.getwd)}"
