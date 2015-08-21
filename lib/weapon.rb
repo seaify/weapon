@@ -50,6 +50,7 @@ class Weapon < Thor
     gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
 
     domain_name = ask("input your domain name, used as nginx conf file's server_name, like www.example.com: ")
+    gsub_file "unicorn-nginx.conf", "app_name_for_replace", app_name
     gsub_file "unicorn-nginx.conf", "domain_name_for_replace", domain_name
 
     puts "setup mina deploy"
@@ -76,8 +77,9 @@ class Weapon < Thor
 
     run 'mina setup'
     run 'scp config/database.yml ' + username + '@' + domain + ':' + directory + '/shared/config/'
-    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + '/etc/nginx/sites-enabled'
+    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + '/etc/nginx/sites-enabled/#{app_name}.conf'
     run 'mina deploy'
+    puts "remember to restart nginx server"
   end
 
   desc "setup_settings_ui", "setup settings ui"
