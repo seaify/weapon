@@ -56,7 +56,7 @@ class Weapon < Thor
     puts "setup mina deploy"
     copy_file 'support/mina_unicorn/deploy.rb', 'config/deploy.rb'
 
-    gsub_file "config/deploy.rb", "app_name_for_replaceA", app_name
+    gsub_file "config/deploy.rb", "app_name_for_replace", app_name
 
     username = ask("input your user name on deploy host:")
     gsub_file "config/deploy.rb", "user_name_fore_replace", username
