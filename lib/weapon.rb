@@ -1,8 +1,11 @@
 require 'thor'
 require 'awesome_print'
+require 'rails'
+require 'rails/generators/actions'
 
 class Weapon < Thor
   include Thor::Actions
+  include Rails::Generators::Actions
 
   def self.source_root
     File.dirname(__FILE__)
@@ -15,7 +18,7 @@ class Weapon < Thor
         puts "this project should in version controll use git"
         run "git init"
         run "git add *"
-        run "git commit -a -m 'first commit'"
+        run "git commit -a -m 'commit by seaify/weapon'"
       end
     end
 
@@ -109,10 +112,95 @@ class Weapon < Thor
     run "hub push -u origin master"
   end
 
+  desc "for_seaify", "only for seaify personal use, combine of other commands act as rails application template"
+  def for_seaify
+    makesure_in_git
+    invoke :install_must_gems
+    invoke :custom_i18n
+    invoke :setup_settings_ui
+  end
+
   desc "install_must_gems", "install must need gems like guard, guard-livereload, guard-rspec..."
   def install_must_gems
-    invoke :makesure_in_git
-    gem 'guard-bundler'
+    makesure_in_git
+
+    gem 'enumerize'
+    gem 'slim-rails'
+    gem 'sass-rails', '~> 5.0'
+    gem 'bootstrap-sass'
+    gem 'font-awesome-sass'
+    gem 'simple_form', '~> 3.1.0'
+    gem 'annotate', '~> 2.6.6'
+    gem 'i18n-tasks', '~> 0.8.3'
+    gem 'monadic'
+    gem 'gon'
+    gem 'exception_notification'
+    gem 'awesome_print'
+    gem 'slack-notifier'
+    gem 'activevalidators'
+
+    gem 'mina', require: false
+    gem 'mina-multistage', require: false
+    gem 'mina-sidekiq', require: false
+    gem 'mina-unicorn', require: false
+
+    gem 'unicorn'
+    gem 'figaro'
+    gem 'whenever', '~> 0.9.2'
+    gem "rails-erd"
+
+    gem_group :development, :test do
+      gem 'web-console', '~> 2.0'
+      gem 'rspec-rails'
+      gem 'factory_girl_rails'
+      gem 'faker', '~> 1.4.3'
+      gem 'spring'
+    end
+
+    gem_group :development do
+      gem 'guard-bundler'
+      gem 'guard-rails'
+      gem 'guard-rspec'
+      gem 'guard-livereload'
+      gem 'rack-livereload'
+      gem 'guard-migrate'
+      gem 'guard-annotate'
+      gem 'guard-shell'
+      gem 'quiet_assets'
+      gem 'rails_layout'
+      gem 'spring-commands-rspec'
+      gem 'better_errors'
+      gem 'meta_request'
+      gem 'binding_of_caller'
+      gem 'hirb'
+      gem 'brakeman'
+      gem 'rails_panel'
+      gem 'pry'
+      gem 'pry-byebug'
+      gem 'pry-nav'
+      #gem 'pry-rails', :group => :development
+    end
+
+    gem_group :test do
+      gem 'database_cleaner'
+      gem 'launchy'
+      gem 'selenium-webdriver'
+      gem 'faker'
+      gem 'simplecov'
+      gem 'timecop'
+    end
+
+    application(nil, env: "development") do
+      "config.middleware.insert_before(Rack::Lock, Rack::LiveReload)"
+    end
+
+    application do
+      "config.generators.template_engine = :slim"
+    end
+
+    run "bundle"
+    run "guard init"
+
   end
 
 end
