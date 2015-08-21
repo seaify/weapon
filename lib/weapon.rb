@@ -222,6 +222,7 @@ class Weapon < Thor
     run "bundle"
     run "guard init"
 
+    run "you might need to remove gem byebug, it might conflict with pry-byebug"
 
 
   end
