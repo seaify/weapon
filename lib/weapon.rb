@@ -34,28 +34,49 @@ class Weapon < Thor
   end
 
 
-  desc "setup_mina_deploy", "setup mina deploy"
-  def setup_mina_deploy
+  desc "setup_mina_unicorn", "setup mina deploy and unicorn server"
+  def setup_mina_unicorn
     makesure_in_git
+
+    gem 'mina-unicorn', require: false
+    gem 'unicorn'
+    run "bundle"
+    app_name = ask("input your app name, used to config unix sock file name: ")
+
+    copy_file 'support/mina_unicorn/unicorn.rb', 'config/unicorn.rb'
+    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
+
+    copy_file 'support/mina_unicorn/unicorn-nginx.conf', 'unicorn-nginx.conf'
+    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
+
+    domain_name = ask("input your domain name, used as nginx conf file's server_name, like www.example.com: ")
+    gsub_file "unicorn-nginx.conf", "domain_name_for_replace", domain_name
+
     puts "setup mina deploy"
-    run "mina init"
+    copy_file 'support/mina_unicorn/deploy.rb', 'config/deploy.rb'
+
+    gsub_file "config/deploy.rb", "app_name_for_replaceA", app_name
+
     username = ask("input your user name on deploy host:")
-    File.open('config/deploy.rb', 'a') { |f| f.write("\nset :user, '#{username}' ")}
+    gsub_file "config/deploy.rb", "user_name_fore_replace", username
+
     domain = ask("input your deploy host, like example.com or 123.100.100.100:")
-    gsub_file "config/deploy.rb", "'foobar.com'", "'" + domain + "'"
+    gsub_file "config/deploy.rb", "domain_name_for_replace", domain
+
     directory = ask("input your deploy directory:")
     directory = directory.gsub(/\/$/, "")
-    gsub_file "config/deploy.rb", "/var/www/foobar.com", directory
+    gsub_file "config/deploy.rb", "deploy_path_for_replace", directory
 
     default_repo = `git remote -v`.split(' ')[1]
     repository = ask("input your git remote url to pull from, default #{default_repo} ")
-    gsub_file "config/deploy.rb", "git://...", (repository != "")?repository: default_repo
+    gsub_file "config/deploy.rb", "repo_path_for_replace", (repository != "")?repository: default_repo
 
     setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
     run setup_dir_command
 
     run 'mina setup'
     run 'scp config/database.yml ' + username + '@' + domain + ':' + directory + '/shared/config/'
+    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + '/etc/nginx/sites-enabled'
     run 'mina deploy'
   end
 
@@ -120,25 +141,7 @@ class Weapon < Thor
     invoke :setup_settings_ui
   end
 
-  desc "setup_unicorn", "create unicorn script and nginx conf file"
-  def setup_unicorn
-    gem 'mina-unicorn', require: false
-    gem 'unicorn'
-    run "bundle"
-    app_name = ask("input your app name, used to config unix sock file name: ")
 
-    copy_file 'support/unicorn/unicorn.rb', 'config/unicorn.rb'
-    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
-
-    copy_file 'support/unicorn/unicorn-nginx.conf', 'unicorn-nginx.conf'
-    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
-
-    domain_name = ask("input your domain name, used as nginx conf file's server_name, like www.example.com: ")
-    gsub_file "unicorn-nginx.conf", "domain_name_for_replace", domain_name
-
-    puts "you need to upload the unicorn-nginx.conf to your server"
-
-  end
 
   desc "install_must_gems", "install must need gems like guard, guard-livereload, guard-rspec..."
   def install_must_gems
