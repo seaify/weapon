@@ -120,6 +120,26 @@ class Weapon < Thor
     invoke :setup_settings_ui
   end
 
+  desc "setup_unicorn", "create unicorn script and nginx conf file"
+  def setup_unicorn
+    gem 'mina-unicorn', require: false
+    gem 'unicorn'
+    run "bundle"
+    app_name = ask("input your app name, used to config unix sock file name: ")
+
+    copy_file 'support/unicorn/unicorn.rb', 'config/unicorn.rb'
+    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
+
+    copy_file 'support/unicorn/unicorn-nginx.conf', 'unicorn-nginx.conf'
+    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
+
+    domain_name = ask("input your domain name, used as nginx conf file's server_name, like www.example.com: ")
+    gsub_file "unicorn-nginx.conf", "domain_name_for_replace", domain_name
+
+    puts "you need to upload the unicorn-nginx.conf to your server"
+
+  end
+
   desc "install_must_gems", "install must need gems like guard, guard-livereload, guard-rspec..."
   def install_must_gems
     makesure_in_git
@@ -142,9 +162,7 @@ class Weapon < Thor
     gem 'mina', require: false
     gem 'mina-multistage', require: false
     gem 'mina-sidekiq', require: false
-    gem 'mina-unicorn', require: false
 
-    gem 'unicorn'
     gem 'figaro'
     gem 'whenever', '~> 0.9.2'
     gem "rails-erd"
@@ -200,6 +218,8 @@ class Weapon < Thor
 
     run "bundle"
     run "guard init"
+
+
 
   end
 
