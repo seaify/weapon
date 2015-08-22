@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'gem_name_for_replace'
+
+Gem_name_for_replace.start ARGV

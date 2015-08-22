@@ -2,6 +2,7 @@ require 'thor'
 require 'awesome_print'
 require 'rails'
 require 'rails/generators/actions'
+require 'fileutils'
 
 class Weapon < Thor
   include Thor::Actions
@@ -127,7 +128,7 @@ class Weapon < Thor
   end
 
   desc "push_to_github", "push to github"
-  def push_to_github
+  def push_to_github(*args)
     makesure_in_git
     puts "pull to github"
     run 'gem install hub'
@@ -227,7 +228,56 @@ class Weapon < Thor
 
     run "you might need to remove gem byebug, it might conflict with pry-byebug"
 
+  end
 
+  desc "create_gem", "create basic gem information"
+  def create_gem(name)
+    ap "hello"
+    ap self.instance_variables
+    ap name
+    FileUtils.mkdir_p name
+    FileUtils.mkdir_p "#{name}/lib"
+    FileUtils.mkdir_p "#{name}/bin"
+
+    gemspec_file = "#{name}/#{name}.gemspec"
+    copy_file "support/create_gem/basic.gemspec", gemspec_file
+    gsub_file gemspec_file, "gem_name_for_replace", name
+    gsub_file gemspec_file, "date_for_replace", Time.now.strftime("%Y-%m-%d")
+    gsub_file gemspec_file, "libfile_for_replace", "lib/#{name}.rb"
+
+    summary = ask("input summary for this gem")
+    gsub_file gemspec_file, "summary_for_replace", summary
+
+    description = ask("input description for this gem")
+    gsub_file gemspec_file, "description_for_replace", description
+
+    author = ask("input name as author for this gem")
+    gsub_file gemspec_file, "author_for_replace", author
+
+    email = ask("input email for this gem")
+    gsub_file gemspec_file, "email_for_replace", email
+
+
+    libfile = "#{name}/lib/#{name}.rb"
+    copy_file "support/create_gem/basic.rb", libfile
+    gsub_file libfile, "gem_name_for_replace", name.camelize
+
+
+    binfile = "#{name}/bin/#{name}"
+    copy_file "support/create_gem/basic.bin", binfile
+    run "chmod +x #{binfile}"
+
+    gsub_file binfile, "gem_name_for_replace", name
+    gsub_file binfile, "Gem_name_for_replace", name.camelize
+
+    makesure_in_git
+    invoke :push_to_github
+
+    default_repo = `git remote -v`.split(' ')[1]
+    gsub_file libfile, "homepage_name_for_replace", default_repo
+    makesure_in_git
+
+    run "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
   end
 
 end
