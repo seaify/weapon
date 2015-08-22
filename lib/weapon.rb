@@ -230,16 +230,17 @@ class Weapon < Thor
 
   end
 
+  desc "create_shit_gem", "create basic gem information"
+  def create_shit_gem(name)
+    run "mkdir #{name}; cd #{name}; weapon create_gem #{name}"
+  end
+
   desc "create_gem", "create basic gem information"
   def create_gem(name)
-    ap "hello"
-    ap self.instance_variables
-    ap name
-    FileUtils.mkdir_p name
-    FileUtils.mkdir_p "#{name}/lib"
-    FileUtils.mkdir_p "#{name}/bin"
+    FileUtils.mkdir_p "lib"
+    FileUtils.mkdir_p "bin"
 
-    gemspec_file = "#{name}/#{name}.gemspec"
+    gemspec_file = "#{name}.gemspec"
     copy_file "support/create_gem/basic.gemspec", gemspec_file
     gsub_file gemspec_file, "gem_name_for_replace", name
     gsub_file gemspec_file, "date_for_replace", Time.now.strftime("%Y-%m-%d")
@@ -258,12 +259,12 @@ class Weapon < Thor
     gsub_file gemspec_file, "email_for_replace", email
 
 
-    libfile = "#{name}/lib/#{name}.rb"
+    libfile = "lib/#{name}.rb"
     copy_file "support/create_gem/basic.rb", libfile
     gsub_file libfile, "gem_name_for_replace", name.camelize
 
 
-    binfile = "#{name}/bin/#{name}"
+    binfile = "bin/#{name}"
     copy_file "support/create_gem/basic.bin", binfile
     run "chmod +x #{binfile}"
 
@@ -273,11 +274,15 @@ class Weapon < Thor
     makesure_in_git
     invoke :push_to_github
 
-    default_repo = `git remote -v`.split(' ')[1]
-    gsub_file libfile, "homepage_name_for_replace", default_repo
+    s = `git remote -v`.split(' ')[1]
+    homepage = 'https://github.com/' + s.split('/')[0].split(':')[-1] + '/' + s.split('/')[1].split('.')[0]
+    ap homepage
+    gsub_file gemspec_file, "homepage_for_replace", homepage
     makesure_in_git
 
-    run "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
+    command = "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
+    ap command
+    #run "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
   end
 
 end
