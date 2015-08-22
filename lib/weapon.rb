@@ -223,6 +223,7 @@ class Weapon < Thor
 
     run "bundle"
     run "guard init"
+    generate "rspec:install"
 
     run "you might need to remove gem byebug, it might conflict with pry-byebug"
 
