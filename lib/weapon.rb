@@ -13,13 +13,11 @@ class Weapon < Thor
   end
 
   no_commands do
-    def makesure_in_git
+    def makesure_in_git(dir=".")
       #run "spring stop"
-      unless (run "git remote -v")
+      unless (run "cd #{dir}; git remote -v")
         puts "this project should in version controll use git"
-        run "git init"
-        run "git add *"
-        run "git commit -a -m 'commit by seaify/weapon'"
+        run "cd #{dir}; git init; git add *; git commit -a -m 'commit by seaify/weapon'"
       end
     end
 
@@ -128,12 +126,11 @@ class Weapon < Thor
   end
 
   desc "push_to_github", "push to github"
-  def push_to_github(*args)
-    makesure_in_git
+  def push_to_github(dir_name='.')
+    repo_name = (dir_name == '.')? File.basename(Dir.getwd): dir_name
+    makesure_in_git(dir_name)
     puts "pull to github"
-    run 'gem install hub'
-    run "hub create #{File.basename(Dir.getwd)}"
-    run "hub push -u origin master"
+    run "cd #{dir_name}; gem install hub;hub create #{repo_name}; hub push -u origin master"
   end
 
   desc "for_seaify", "only for seaify personal use, combine of other commands act as rails application template"
@@ -148,6 +145,7 @@ class Weapon < Thor
 
   desc "install_must_gems", "install must need gems like guard, guard-livereload, guard-rspec..."
   def install_must_gems
+
     makesure_in_git
 
     gem 'enumerize'
@@ -222,17 +220,15 @@ class Weapon < Thor
       "config.generators.template_engine = :slim"
     end
 
+    gsub_file 'Gemfile', "gem 'byebug'", ''
     run "bundle"
     run "guard init"
     generate "rspec:install"
+    generate "simple_form:install"
 
-    run "you might need to remove gem byebug, it might conflict with pry-byebug"
+    run "git add lib/ spec/ config Guardfile .rspec .gitignore"
+    run "git commit -a --amend --no-edit"
 
-  end
-
-  desc "create_shit_gem", "create basic gem information"
-  def create_shit_gem(name)
-    run "mkdir #{name}; cd #{name}; weapon create_gem #{name}"
   end
 
   desc "create_gem", "create basic gem information"
@@ -240,7 +236,7 @@ class Weapon < Thor
     FileUtils.mkdir_p "lib"
     FileUtils.mkdir_p "bin"
 
-    gemspec_file = "#{name}.gemspec"
+    gemspec_file = "#{name}/#{name}.gemspec"
     copy_file "support/create_gem/basic.gemspec", gemspec_file
     gsub_file gemspec_file, "gem_name_for_replace", name
     gsub_file gemspec_file, "date_for_replace", Time.now.strftime("%Y-%m-%d")
@@ -259,30 +255,31 @@ class Weapon < Thor
     gsub_file gemspec_file, "email_for_replace", email
 
 
-    libfile = "lib/#{name}.rb"
+    libfile = "#{name}/lib/#{name}.rb"
     copy_file "support/create_gem/basic.rb", libfile
     gsub_file libfile, "gem_name_for_replace", name.camelize
 
 
-    binfile = "bin/#{name}"
+    binfile = "#{name}/bin/#{name}"
     copy_file "support/create_gem/basic.bin", binfile
     run "chmod +x #{binfile}"
 
     gsub_file binfile, "gem_name_for_replace", name
     gsub_file binfile, "Gem_name_for_replace", name.camelize
 
-    makesure_in_git
-    invoke :push_to_github
+    makesure_in_git(name)
+    invoke :push_to_github, name
 
-    s = `git remote -v`.split(' ')[1]
+    s = `cd #{name};git remote -v`.split(' ')[1]
     homepage = 'https://github.com/' + s.split('/')[0].split(':')[-1] + '/' + s.split('/')[1].split('.')[0]
     ap homepage
     gsub_file gemspec_file, "homepage_for_replace", homepage
-    makesure_in_git
 
-    command = "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
+    run "cd #{name};git commit -a --amend --no-edit"
+
+    command = "cd #{name};gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
     ap command
-    #run "gem build #{name}.gemspec; gem push #{name}-0.0.1.gem"
+    run command
   end
 
 end
