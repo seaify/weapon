@@ -231,7 +231,7 @@ class Weapon < Thor
 
   end
 
-  desc "create_gem", "create basic gem information"
+  desc "create_gem", "create basic gem information and push to github, push to rubygems"
   def create_gem(name)
     FileUtils.mkdir_p "lib"
     FileUtils.mkdir_p "bin"

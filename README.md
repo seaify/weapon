@@ -6,7 +6,7 @@ Weapon is a collector which provide the reusable part from each project . Each p
 
 It currently contains the following list parts:  
 1. [weapon custom_i18n](custom_i18n.md), scaffold generator i18n support, auoto generate model attributes key mapping in config/local/*.yml, generated view and controller i18n support  
-2. mina deploy, you just need to input the host's user name, ip, deploy directory, git repo  
+2. mina deploy & unicorn server, you just need to input the host's user name, ip, deploy directory. It will also generate nginx file, and upload to server's /etc/nginx/sites-enabled
 3. rails_settings_ui, you just need to run 'weapon rails_settings_ui', then http://localhost:3000/settings works  
 4. push_to_github, push your directory into github with no effort, no need to use the browser  
 
@@ -28,13 +28,14 @@ Usage
 ```ruby
 chuck@chuck-MacBook-Pro:~/seaify/weapon(master|✔) % weapon  
 Commands:
-  weapon config_bootstrap   # config bootstrap, example, used for simmple_form
-  weapon custom_i18n        # custom i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml
-  weapon help [COMMAND]     # Describe available commands or one specific command
-  weapon makesure_in_git    # makesure all the files is in git version control
-  weapon push_to_github     # push to github
-  weapon setup_mina_deploy  # setup mina deploy
-  weapon setup_settings_ui  # setup settings ui
+  weapon create_gem          # create basic gem information
+  weapon custom_i18n         # custom i18n and use slim as template engine, use simple_form, currently write to zh-CN.yml
+  weapon for_seaify          # only for seaify personal use, combine of other commands act as rails application template
+  weapon help [COMMAND]      # Describe available commands or one specific command
+  weapon install_must_gems   # install must need gems like guard, guard-livereload, guard-rspec...
+  weapon push_to_github      # push to github
+  weapon setup_mina_unicorn  # setup mina deploy and unicorn server
+  weapon setup_settings_ui   # setup settings ui
 ```
 
 Environment version
