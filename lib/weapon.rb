@@ -37,46 +37,62 @@ class Weapon < Thor
   def setup_mina_unicorn
     makesure_in_git
 
+    gem 'mina-multistage', require: false
     gem 'mina-unicorn', require: false
     gem 'unicorn'
     run "bundle"
-    app_name = ask("input your app name, used to config unix sock file name: ")
+    FileUtils.mkdir_p "config/deploy"
+    FileUtils.mkdir_p "config/unicorn"
 
-    copy_file 'support/mina_unicorn/unicorn.rb', 'config/unicorn.rb'
-    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
-
+    copy_file 'support/mina_unicorn/deploy.rb', 'config/deploy.rb'
+    copy_file 'support/mina_unicorn/unicorn_production.rb', 'config/unicorn/production.rb'
+    copy_file 'support/mina_unicorn/unicorn_staging.rb', 'config/unicorn/staging.rb'
+    copy_file 'support/mina_unicorn/deploy_production.rb', 'config/deploy/production.rb'
+    copy_file 'support/mina_unicorn/deploy_staging.rb', 'config/deploy/staging.rb'
     copy_file 'support/mina_unicorn/unicorn-nginx.conf', 'unicorn-nginx.conf'
-    gsub_file "config/unicorn.rb", "app_name_for_replace", app_name
-
-    domain_name = ask("input your domain name, used as nginx conf file's server_name, like www.example.com: ")
-    gsub_file "unicorn-nginx.conf", "app_name_for_replace", app_name
-    gsub_file "unicorn-nginx.conf", "domain_name_for_replace", domain_name
 
     puts "setup mina deploy"
-    copy_file 'support/mina_unicorn/deploy.rb', 'config/deploy.rb'
 
-    gsub_file "config/deploy.rb", "app_name_for_replace", app_name
+    app_name = `pwd`.split('/')[-1].strip()
+    username, domain = ask("input your username && host like seaify@1.2.3.4: ").split('@')
+    deploy_directory = "/home/#{username}/#{app_name}"
+    repo_path = `git config --get remote.origin.url`.strip()
 
-    username = ask("input your user name on deploy host:")
-    gsub_file "config/deploy.rb", "user_name_fore_replace", username
+    %w(app_name username domain deploy_directory repo_path).each do |key|
+      ap key
+      gsub_file "config/deploy/production.rb", "#{key}_for_replace", eval(key)
+      gsub_file "config/deploy/staging.rb", "#{key}_for_replace", eval(key)
 
-    domain = ask("input your deploy host, like example.com or 123.100.100.100:")
-    gsub_file "config/deploy.rb", "domain_name_for_replace", domain
+      gsub_file "config/unicorn/production.rb", "#{key}_for_replace", eval(key)
+      gsub_file "config/unicorn/staging.rb", "#{key}_for_replace", eval(key)
 
-    directory = ask("input your deploy directory:")
-    directory = directory.gsub(/\/$/, "")
-    gsub_file "config/deploy.rb", "deploy_path_for_replace", directory
+      gsub_file "unicorn-nginx.conf", "#{key}_for_replace", eval(key)
+      gsub_file "config/deploy.rb", "#{key}_for_replace", eval(key)
 
-    default_repo = `git remote -v`.split(' ')[1]
-    repository = ask("input your git remote url to pull from, default #{default_repo} ")
-    gsub_file "config/deploy.rb", "repo_path_for_replace", (repository != "")?repository: default_repo
+    end
 
-    setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + directory  + ';chown -R ' + username + ' ' + directory + "'"
+    setup_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + deploy_directory  + ';chown -R ' + username + ' ' + deploy_directory + "'"
     run setup_dir_command
+    setup_staging_dir_command = 'ssh ' + username + '@' + domain + " -t 'mkdir -p " + deploy_directory  + '_staging;chown -R ' + username + ' ' + deploy_directory + "_staging'"
+    run setup_staging_dir_command
+
+
+    run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
+    run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
+    run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
+
+    run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
+    run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
+    run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
+
+    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + "/etc/nginx/sites-enabled/#{app_name}.conf"
+=begin
+    run "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
+    run "echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc"
+    run "echo 'eval "$(rbenv init -)"' >> ~/.zshrc"
+=end
 
     run 'mina setup'
-    run 'scp config/database.yml ' + username + '@' + domain + ':' + directory + '/shared/config/'
-    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + '/etc/nginx/sites-enabled/#{app_name}.conf'
     run 'mina deploy'
     puts "remember to restart nginx server"
   end

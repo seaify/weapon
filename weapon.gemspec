@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'weapon'
-  s.version     = '0.1.0'
-  s.date        = '2015-08-23'
+  s.version     = '0.1.1'
+  s.date        = '2016-04-27'
   s.summary     = "weapon for rails application!"
   s.description = "provide mina deploy, github setup, slack exception notify, i18n scaffold, rails-settings-ui, guard custom"
   s.authors     = ["Chuck.lei"]

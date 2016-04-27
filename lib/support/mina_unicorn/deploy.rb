@@ -1,28 +1,15 @@
+set :default_stage, 'staging'
+
+require 'mina/multistage'
 require 'mina/bundler'
 require 'mina/rails'
 require 'mina/git'
-# require 'mina/rbenv'  # for rbenv support. (http://rbenv.org)
-require 'mina/rvm'    # for rvm support. (http://rvm.io)
+require 'mina/rbenv'
 require 'mina/unicorn'
-
-# Basic settings:
-#   domain       - The hostname to SSH to.
-#   deploy_to    - Path to deploy into.
-#   repository   - Git repo to clone from. (needed by mina/git)
-#   branch       - Branch name to deploy. (needed by mina/git)
-
-set :user, 'user_name_fore_replace'
-set :domain, 'domain_name_for_replace'
-set :deploy_to, 'deploy_path_for_replace'
-set :repository, 'repo_path_for_replace'
-set :branch, 'master'
-
-# For system-wide RVM install.
-#   set :rvm_path, '/usr/local/rvm/bin/rvm'
 
 # Manually create these paths in shared/ (eg: shared/config/database.yml) in your server.
 # They will be linked in the 'deploy:link_shared_paths' step.
-set :shared_paths, ['config/database.yml', 'config/secrets.yml', 'log']
+set :shared_paths, ['config/database.yml', 'config/secrets.yml', 'config/application.yml', 'log', 'tmp', 'public/uploads']
 
 # Optional settings:
 #   set :user, 'foobar'    # Username in the server to SSH to.
@@ -32,12 +19,7 @@ set :shared_paths, ['config/database.yml', 'config/secrets.yml', 'log']
 # This task is the environment that is loaded for most commands, such as
 # `mina deploy` or `mina rake`.
 task :environment do
-  # If you're using rbenv, use this to load the rbenv environment.
-  # Be sure to commit your .ruby-version or .rbenv-version to your repository.
-  # invoke :'rbenv:load'
-
-  # For those using RVM, use this to load an RVM version@gemset.
-  invoke :'rvm:use[ruby-2.0.0-p643@default]'
+  invoke :'rbenv:load'
 end
 
 # Put any custom mkdir's in here for when `mina setup` is ran.
@@ -56,9 +38,10 @@ task :setup => :environment do
   queue! %[mkdir -p "#{deploy_to}/#{shared_path}/tmp/pids"]
   queue! %[chmod g+rx,u+rwx "#{deploy_to}/#{shared_path}/tmp/pids"]
 
+  queue! %[touch "#{deploy_to}/#{shared_path}/config/application.yml"]
   queue! %[touch "#{deploy_to}/#{shared_path}/config/database.yml"]
   queue! %[touch "#{deploy_to}/#{shared_path}/config/secrets.yml"]
-  queue  %[echo "-----> Be sure to edit '#{deploy_to}/#{shared_path}/config/database.yml' and 'secrets.yml'."]
+  queue  %[echo "-----> Be sure to edit '#{deploy_to}/#{shared_path}/config/application.yml' and 'database.yml' and 'secrets.yml'."]
 
   queue %[
     repo_host=`echo $repo | sed -e 's/.*@//g' -e 's/:.*//g'` &&
