@@ -1,5 +1,6 @@
 require 'thor'
 require 'awesome_print'
+require 'colorize'
 require 'rails'
 require 'rails/generators/actions'
 require 'fileutils'
@@ -81,6 +82,16 @@ class Weapon < Thor
     run setup_staging_dir_command
 
 
+    #run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + "/etc/nginx/sites-enabled/#{app_name}.conf"
+=begin
+    run "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
+    run "echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc"
+    run "echo 'eval "$(rbenv init -)"' >> ~/.zshrc"
+=end
+    run "ssh-copy-id #{username}@#{domain}"
+
+    run 'mina setup'
+
     run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
@@ -89,17 +100,10 @@ class Weapon < Thor
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
     run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
 
-    #run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + "/etc/nginx/sites-enabled/#{app_name}.conf"
-=begin
-    run "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
-    run "echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc"
-    run "echo 'eval "$(rbenv init -)"' >> ~/.zshrc"
-=end
-
-    run 'mina setup'
     run 'mina deploy'
     puts "remember to make soft link to unicorn-nginx.conf && staging-unicorn-nginx.conf".colorize(:blue)
     puts "remember to restart nginx server".colorize(:blue)
+    puts "remember to add ssh key to your repo setting url".colorize(:blue)
   end
 
   desc "setup_settings_ui", "setup settings ui"

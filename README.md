@@ -38,12 +38,6 @@ Commands:
   weapon setup_settings_ui   # setup settings ui
 ```
 
-Environment version
------------------------
-
-ruby 2.1.5  
-rails 4.2.2  
-
 More Information
 ----------------
 
