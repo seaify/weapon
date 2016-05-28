@@ -37,7 +37,8 @@ class Weapon < Thor
   desc "setup_mina_unicorn", "setup mina deploy and unicorn server"
   def setup_mina_unicorn
     makesure_in_git
-
+    repo_path = `git config --get remote.origin.url`.strip()
+    return puts "at least one remote url should be set before we start!!!".colorize(:red) unless repo_path.present?
     gem_group :development do
       gem 'mina-multistage', require: false
       gem 'mina-unicorn', require: false
@@ -60,7 +61,7 @@ class Weapon < Thor
     app_name = `pwd`.split('/')[-1].strip()
     username, domain = ask("input your username && host like seaify@1.2.3.4: ").split('@')
     deploy_directory = "/home/#{username}/#{app_name}"
-    repo_path = `git config --get remote.origin.url`.strip()
+
 
     %w(app_name username domain deploy_directory repo_path).each do |key|
       ap key
@@ -90,20 +91,30 @@ class Weapon < Thor
 =end
     run "ssh-copy-id #{username}@#{domain}"
 
-    run 'mina setup'
+    staging = `git branch -a | grep staging | ag remote`
+    ap staging
+    run 'mina setup' if staging.present?
+    run 'mina production setup'
 
     run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
 
-    run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
+    run 'cp config/database.yml config/staging_database.yml'
+    gsub_file "config/staging_database.yml", "production", "staging"
+    run 'scp config/staging_database.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/database.yml'
+    run "rm config/staging_database.yml"
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
     run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
 
-    run 'mina deploy'
+    run 'mina deploy' if staging.present?
+    run 'mina production deploy'
+    run 'git add config/ .gitignore staging-unicorn-nginx.conf unicorn-nginx.conf'
+    run 'git commit -a -m "add mina unicorn multi stage support"'
     puts "remember to make soft link to unicorn-nginx.conf && staging-unicorn-nginx.conf".colorize(:blue)
     puts "remember to restart nginx server".colorize(:blue)
     puts "remember to add ssh key to your repo setting url".colorize(:blue)
+    puts "staging branch missing, you need create staging branch, then exec mina setup, mina deploy".colorize(:red) unless staging.present?
   end
 
   desc "setup_settings_ui", "setup settings ui"
