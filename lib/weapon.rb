@@ -37,9 +37,11 @@ class Weapon < Thor
   def setup_mina_unicorn
     makesure_in_git
 
-    gem 'mina-multistage', require: false
-    gem 'mina-unicorn', require: false
-    gem 'unicorn'
+    gem_group :development do
+      gem 'mina-multistage', require: false
+      gem 'mina-unicorn', require: false
+      gem 'unicorn'
+    end
     run "bundle"
     FileUtils.mkdir_p "config/deploy"
     FileUtils.mkdir_p "config/unicorn"
@@ -50,6 +52,7 @@ class Weapon < Thor
     copy_file 'support/mina_unicorn/deploy_production.rb', 'config/deploy/production.rb'
     copy_file 'support/mina_unicorn/deploy_staging.rb', 'config/deploy/staging.rb'
     copy_file 'support/mina_unicorn/unicorn-nginx.conf', 'unicorn-nginx.conf'
+    copy_file 'support/mina_unicorn/staging-unicorn-nginx.conf', 'staging-unicorn-nginx.conf'
 
     puts "setup mina deploy"
 
@@ -67,6 +70,7 @@ class Weapon < Thor
       gsub_file "config/unicorn/staging.rb", "#{key}_for_replace", eval(key)
 
       gsub_file "unicorn-nginx.conf", "#{key}_for_replace", eval(key)
+      gsub_file "staging-unicorn-nginx.conf", "#{key}_for_replace", eval(key)
       gsub_file "config/deploy.rb", "#{key}_for_replace", eval(key)
 
     end
@@ -85,7 +89,7 @@ class Weapon < Thor
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
     run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
 
-    run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + "/etc/nginx/sites-enabled/#{app_name}.conf"
+    #run 'scp unicorn-nginx.conf ' + username + '@' + domain + ':' + "/etc/nginx/sites-enabled/#{app_name}.conf"
 =begin
     run "git clone https://github.com/sstephenson/rbenv.git ~/.rbenv"
     run "echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.zshrc"
@@ -94,7 +98,8 @@ class Weapon < Thor
 
     run 'mina setup'
     run 'mina deploy'
-    puts "remember to restart nginx server"
+    puts "remember to make soft link to unicorn-nginx.conf && staging-unicorn-nginx.conf".colorize(:blue)
+    puts "remember to restart nginx server".colorize(:blue)
   end
 
   desc "setup_settings_ui", "setup settings ui"
@@ -179,9 +184,11 @@ class Weapon < Thor
     gem 'slack-notifier'
     gem 'activevalidators'
 
-    gem 'mina', require: false
-    gem 'mina-multistage', require: false
-    gem 'mina-sidekiq', require: false
+    gem_group :development do
+      gem 'mina', require: false
+      gem 'mina-multistage', require: false
+      gem 'mina-sidekiq', require: false
+    end
 
     gem 'figaro'
     gem 'whenever', '~> 0.9.2'

@@ -84,7 +84,7 @@ end
 
 desc "Shows logs."
 task :logs do
-  queue %[cd #{deploy_to!}/current && tail -f log/production.log]
+  queue %[cd #{deploy_to!}/current && tail -f log/#{rails_env}.log]
 end
 
 desc "Display the unicorn logs."
