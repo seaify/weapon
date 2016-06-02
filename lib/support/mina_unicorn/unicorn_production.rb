@@ -3,7 +3,7 @@ app_path = File.expand_path( File.join(File.dirname(__FILE__), '..', '..'))
 worker_processes   4
 preload_app        true
 timeout            180
-listen             '/tmp/unicorn.sock'
+listen             "#{app_path}/tmp/unicorn.sock"
 pid                "#{app_path}/tmp/pids/unicorn.pid"
 user               'username_for_replace', 'username_for_replace'
 stderr_path        "log/unicorn_err.log"
