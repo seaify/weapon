@@ -99,18 +99,27 @@ class Weapon < Thor
     run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
 
-    run 'cp config/secrets.yml config/staging_secrets.yml'
-    gsub_file "config/staging_secrets.yml", "development", "staging"
-    run 'scp config/staging_secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/secrets.yml'
-    run "rm config/staging_secrets.yml"
+    run 'cp config/secrets.yml config/production_secrets.yml'
+    gsub_file "config/production_secrets.yml", "production", "staging"
+    gsub_file "config/production_secrets.yml", "test", "production"
+    run 'scp config/production_secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/secrets.yml'
+    run "rm config/production_secrets.yml"
+
+    ## for staging
 
     run 'cp config/database.yml config/staging_database.yml'
     gsub_file "config/staging_database.yml", "production", "staging"
     run 'scp config/staging_database.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/database.yml'
     run "rm config/staging_database.yml"
-    run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
-    run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
 
+    run 'cp config/secrets.yml config/staging_secrets.yml'
+    gsub_file "config/staging_secrets.yml", "development", "staging"
+    run 'scp config/staging_secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/secrets.yml'
+    run "rm config/staging_secrets.yml"
+
+    run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '_staging/shared/config/'
+
+    ## run mina setup && deploy
     run 'mina deploy' if staging.present?
     run 'mina production deploy'
     run 'git add config/ .gitignore staging-unicorn-nginx.conf unicorn-nginx.conf'
