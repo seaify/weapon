@@ -117,6 +117,17 @@ class Weapon < Thor
     puts "staging branch missing, you need create staging branch, then exec mina setup, mina deploy".colorize(:red) unless staging.present?
   end
 
+  desc "model_from_sql", "build model from sql"
+  def model_from_sql
+    makesure_in_git
+    FileUtils.mkdir_p "lib/generators/model_from_sql"
+    copy_file 'support/model_from_sql/model_from_sql_generator.rb', 'lib/generators/model_from_sql/model_from_sql_generator.rb'
+    run 'git add lib/'
+    run 'rails g model_from_sql'
+    run 'git add app/ test/ lib/'
+    run 'git commit -a -m "add model_from_sql generator and build models from sql"'
+  end
+
   desc "setup_settings_ui", "setup settings ui"
   def setup_settings_ui
     makesure_in_git
@@ -185,6 +196,7 @@ class Weapon < Thor
     makesure_in_git
 
     gem 'enumerize'
+    gem 'aasm'
     gem 'slim-rails'
     gem 'sass-rails', '~> 5.0'
     gem 'bootstrap-sass'
