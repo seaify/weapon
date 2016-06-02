@@ -98,7 +98,11 @@ class Weapon < Thor
 
     run 'scp config/database.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
     run 'scp config/application.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
-    run 'scp config/secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/'
+
+    run 'cp config/secrets.yml config/staging_secrets.yml'
+    gsub_file "config/staging_secrets.yml", "development", "staging"
+    run 'scp config/staging_secrets.yml ' + username + '@' + domain + ':' + deploy_directory + '/shared/config/secrets.yml'
+    run "rm config/staging_secrets.yml"
 
     run 'cp config/database.yml config/staging_database.yml'
     gsub_file "config/staging_database.yml", "production", "staging"
