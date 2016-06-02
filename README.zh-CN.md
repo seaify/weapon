@@ -141,7 +141,3 @@ Connection to 45.55.140.65 closed.
 ## 其它
 1. weapon setup_settings_ui,  执行完后，访问http://localhost:3000/settings，就能去设置更新变量了
 2. weapon push_to_github,  执行完后，将当下的代码push到github上去。不用跑到github手动创建repo
-
-## 问题, 请教各路大神
-1.  这个gem是使用thor的，怎样去用rails application template中的gem, generator这些函数呢？
-2. 在thor里，我怎样去获取，当期rails项目下的配置信息呢，比如我想知道设置了哪些locales?

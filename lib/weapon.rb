@@ -35,7 +35,7 @@ class Weapon < Thor
 
 
   desc "setup_mina_unicorn", "setup mina deploy and unicorn server"
-  def setup_mina_unicorn
+  def setup_mina_unicorn(user_host)
     makesure_in_git
     repo_path = `git config --get remote.origin.url`.strip()
     return puts "at least one remote url should be set before we start!!!".colorize(:red) unless repo_path.present?
@@ -59,7 +59,7 @@ class Weapon < Thor
     puts "setup mina deploy"
 
     app_name = `pwd`.split('/')[-1].strip()
-    username, domain = ask("input your username && host like seaify@1.2.3.4: ").split('@')
+    username, domain = user_host.split('@')
     deploy_directory = "/home/#{username}/#{app_name}"
 
 
