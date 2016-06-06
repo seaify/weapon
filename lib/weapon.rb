@@ -141,6 +141,17 @@ class Weapon < Thor
     run 'git commit -a -m "add model_from_sql generator and build models from sql"'
   end
 
+  desc "build all activeadmin page ", "build all activeadmin page"
+  def build_activeadmin_pages
+    makesure_in_git
+    FileUtils.mkdir_p "lib/generators/build_activeadmin_pages"
+    copy_file 'support/build_activeadmin_pages/build_activeadmin_pages_generator.rb', 'lib/generators/build_activeadmin_pages/build_activeadmin_pages_generator.rb'
+    run 'git add lib/'
+    run 'rails g build_activeadmin_pages'
+    run 'git add app/ test/ lib/'
+    run 'git commit -a -m "add build_activeadmin_pages generator and build pages from model"'
+  end
+
   desc "setup_settings_ui", "setup settings ui"
   def setup_settings_ui
     makesure_in_git
