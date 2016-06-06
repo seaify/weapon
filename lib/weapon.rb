@@ -137,8 +137,12 @@ class Weapon < Thor
     copy_file 'support/model_from_sql/model_from_sql_generator.rb', 'lib/generators/model_from_sql/model_from_sql_generator.rb'
     run 'git add lib/'
     run 'rails g model_from_sql'
-    run 'git add app/ test/ lib/'
+    run 'git add app/'
+    run 'git add spec/'
+    run 'git add test/'
+    run 'git add lib/'
     run 'git commit -a -m "add model_from_sql generator and build models from sql"'
+    run 'annonate'
   end
 
   desc "build all activeadmin page ", "build all activeadmin page"
