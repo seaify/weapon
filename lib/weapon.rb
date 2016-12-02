@@ -131,16 +131,18 @@ class Weapon < Thor
   end
 
   desc "model_from_sql", "build model from sql"
+  method_option :contain, :type => :string, :default => '', :required => false
   def model_from_sql
     makesure_in_git
     FileUtils.mkdir_p "lib/generators/model_from_sql"
     copy_file 'support/model_from_sql/model_from_sql_generator.rb', 'lib/generators/model_from_sql/model_from_sql_generator.rb'
     run 'git add lib/'
-    run 'rails g model_from_sql'
+    run "rails g model_from_sql #{options.contain}"
     run 'git add app/'
     run 'git add spec/'
     run 'git add test/'
     run 'git add lib/'
+    run 'git add db/migrate'
     run 'git commit -a -m "add model_from_sql generator and build models from sql"'
     run 'annonate'
   end
